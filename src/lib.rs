@@ -14,9 +14,6 @@ pub enum Color {
 
 pub struct Game {
     state: GameState,
-    black: u64,
-    white: u64,
-    kings: u64,
 }
 
 impl Game {
