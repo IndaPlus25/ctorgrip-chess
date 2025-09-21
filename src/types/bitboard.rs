@@ -1,27 +1,18 @@
-pub struct BitBoard(u64);
+use std::ops::BitOr;
 
-impl Bitboard {
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct BitBoard(pub u64);
+
+impl BitOr for BitBoard {
+    type Output = BitBoard;
+
+    fn bitor(self, rhs: Self) -> Self::Output {
+        BitBoard(self.0 | rhs.0)
+    }
+}
+
+impl BitBoard {
     pub fn new(bits: u64) -> Self {
         Self(bits)
-    }
-
-    pub fn default_pawns() -> Self {
-        Self(0b1111111100000000)
-    }
-
-    pub fn default_knights() -> Self {
-        Self(0b1000010)
-    }
-
-    pub fn default_bishops() -> Self {
-        Self(0b100100)
-    }
-
-    pub fn default_queens() -> Self {
-        Self(0b10000)
-    }
-
-    pub fn default_king() -> Self {
-        Self(0b1000)
     }
 }

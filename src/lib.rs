@@ -1,3 +1,5 @@
+mod types;
+
 use std::fmt;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -48,8 +50,7 @@ impl fmt::Debug for Game {
 
 #[cfg(test)]
 mod tests {
-    use super::Game;
-    use super::GameState;
+    use super::{Game, GameState};
 
     #[test]
     fn game_progress_sanity() {
