@@ -1,5 +1,8 @@
 use super::bitboard::BitBoard;
 
+pub const RANK_4: u64 = 0xff000000;
+pub const FILE_H: u64 = 0x8080808080808080;
+
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum GameState {
     InProgress,
@@ -33,8 +36,7 @@ impl Position {
     pub fn default() -> Self {
         Self {
             pieces: [
-                // Hexes used for brevity, refer to:
-                // https://tearth.dev/bitboard-viewer/
+                // Hexes used for brevity, refer to: https://tearth.dev/bitboard-viewer/
                 // for visualising the bits
                 BitBoard(0xFF00000000FF00),
                 BitBoard(0x4200000000000042),
@@ -47,6 +49,33 @@ impl Position {
             side_to_move: Color::White,
         }
     }
+
+    pub fn occupied(&self) -> BitBoard {
+        self.colors[0] | self.colors[1]
+    }
+
+    pub fn pawn_moves(&self) -> BitBoard {
+        let mut moves = BitBoard::empty();
+        let occupied = self.occupied().0;
+
+        match self.side_to_move {
+            Color::White => {
+                let pawns = self.pieces[0] & self.colors[0];
+
+                // "Quiets" (non-attacks) - UP 1 (UP 2 : MASKED ON RANK 4)
+                let quiets = ((pawns.0 << 8) | ((pawns.0 << 16) & RANK_4)) & !occupied;
+
+                // Attacks
+                // 1 UP 1 LEFT : MASKED AWAY H FILE
+                (our_pawns.0 << 7) & !FILE_H;
+            }
+            Color::Black => {
+                todo!()
+            }
+        }
+
+        moves
+    }
 }
 
 #[cfg(test)]
@@ -54,10 +83,16 @@ mod tests {
     use super::*;
 
     #[test]
-    fn position_default() {
+    fn default() {
         let default_pos = Position::default();
         let both_colors = BitBoard(0xffff00000000ffff);
         assert_eq!(default_pos.colors[0] | default_pos.colors[1], both_colors);
         assert_eq!(default_pos.side_to_move, Color::White);
+    }
+
+    #[test]
+    fn occupied() {
+        let pos1 = Position::default();
+        assert_eq!(pos1.occupied().0, 0xffff00000000ffff)
     }
 }
