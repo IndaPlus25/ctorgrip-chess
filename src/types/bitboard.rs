@@ -1,4 +1,4 @@
-use std::ops::{BitAnd, BitOr, ShlAssign};
+use std::ops::{BitAnd, BitOr};
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct BitBoard(pub u64);

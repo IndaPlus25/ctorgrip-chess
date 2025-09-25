@@ -1,7 +1,10 @@
+use std::ops::Not;
+
 use super::bitboard::BitBoard;
 
 pub const RANK_4: u64 = 0xff000000;
-pub const FILE_H: u64 = 0x8080808080808080;
+pub const FILE_A: u64 = 0x8080808080808080
+pub const FILE_H: u64 = 0x101010101010101;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum GameState {
@@ -15,6 +18,18 @@ pub enum Color {
     White,
     Black,
 }
+
+impl Not for Color {
+    type Output = Color;
+
+    fn not(self) -> Self::Output {
+        match self {
+            Color::White => Color::Black,
+            Color::Black => Color::White,
+        }
+    }
+}
+
 
 /// Pieces: Bitboard representation of all occupied squares by each piece type
 /// [Pawns, Knights, Bishops, Rooks, Queens, Kings]
@@ -54,20 +69,32 @@ impl Position {
         self.colors[0] | self.colors[1]
     }
 
+    pub fn colored_pieces(&self, color: Color) -> BitBoard {
+        match color {
+            Color::White => self.colors[0],
+            Color::Black => self.colors[1],
+        }
+    }
+
     pub fn pawn_moves(&self) -> BitBoard {
         let mut moves = BitBoard::empty();
         let occupied = self.occupied().0;
+        let enemies = self.colored_pieces(!self.side_to_move)
 
         match self.side_to_move {
             Color::White => {
-                let pawns = self.pieces[0] & self.colors[0];
+                let our_pawns = self.pieces[0] & self.colored_pieces(self.side_to_move);
 
                 // "Quiets" (non-attacks) - UP 1 (UP 2 : MASKED ON RANK 4)
-                let quiets = ((pawns.0 << 8) | ((pawns.0 << 16) & RANK_4)) & !occupied;
+                let quiets = ((our_pawns.0 << 8) | ((our_pawns.0 << 16) & RANK_4)) & !occupied;
 
                 // Attacks
                 // 1 UP 1 LEFT : MASKED AWAY H FILE
-                (our_pawns.0 << 7) & !FILE_H;
+                let attacks = (((our_pawns.0 << 7) & !FILE_H)
+                // 1 UP 1 RIGHT : MASKED AWAY A FILE
+                | ((our_pawns.0 << 9) & !FILE_A)) & enemies.0;
+
+                moves = BitBoard(quiets | attacks);
             }
             Color::Black => {
                 todo!()
